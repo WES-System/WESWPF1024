@@ -31,6 +31,11 @@ namespace WES.Commons
             DoExcute?.Invoke(parameter);
         }
 
+        public void RaiseCanExecuteChanged()
+        {
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         public Action<object> DoExcute { get; set; }
 
         public Func<object, bool> DoCanExecute { get; set; }

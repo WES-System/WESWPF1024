@@ -40,6 +40,10 @@
     <ApplicationIcon>system.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Common, Version=1.0.0.30, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Common.dll</HintPath>
+    </Reference>
     <Reference Include="FontAwesome.Sharp, Version=6.6.0.0, Culture=neutral, PublicKeyToken=d16d1e4e568ec10f, processorArchitecture=MSIL">
       <HintPath>..\packages\FontAwesome.Sharp.6.6.0\lib\net48\FontAwesome.Sharp.dll</HintPath>
     </Reference>
@@ -48,6 +52,9 @@
     </Reference>
     <Reference Include="FreeSql.DbContext, Version=3.5.210.0, Culture=neutral, PublicKeyToken=d6971b25f8f033dc, processorArchitecture=MSIL">
       <HintPath>..\packages\FreeSql.DbContext.3.5.210\lib\net45\FreeSql.DbContext.dll</HintPath>
+    </Reference>
+    <Reference Include="FreeSql.Provider.PostgreSQL, Version=3.5.210.0, Culture=neutral, PublicKeyToken=7721fab3640808fe, processorArchitecture=MSIL">
+      <HintPath>..\packages\FreeSql.Provider.PostgreSQL.3.5.210\lib\net461\FreeSql.Provider.PostgreSQL.dll</HintPath>
     </Reference>
     <Reference Include="FreeSql.Provider.Sqlite, Version=3.5.210.0, Culture=neutral, PublicKeyToken=5800863e689c9dd8, processorArchitecture=MSIL">
       <HintPath>..\packages\FreeSql.Provider.Sqlite.3.5.210\lib\net45\FreeSql.Provider.Sqlite.dll</HintPath>
@@ -64,8 +71,26 @@
     <Reference Include="Microsoft.Xaml.Behaviors, Version=1.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Xaml.Behaviors.Wpf.1.1.135\lib\net462\Microsoft.Xaml.Behaviors.dll</HintPath>
     </Reference>
+    <Reference Include="NetTopologySuite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.2.0.0\lib\netstandard2.0\NetTopologySuite.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO.PostGis, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.IO.PostGis.2.0.0\lib\netstandard2.0\NetTopologySuite.IO.PostGis.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NModbus">
       <HintPath>..\..\..\..\3.程序集\Modbus\NModbus.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql, Version=4.1.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.4.1.7\lib\net461\Npgsql.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql.LegacyPostgis, Version=4.1.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.LegacyPostgis.4.1.7\lib\net461\Npgsql.LegacyPostgis.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql.NetTopologySuite, Version=4.1.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.NetTopologySuite.4.1.7\lib\net461\Npgsql.NetTopologySuite.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -133,6 +158,9 @@
     </Compile>
     <Compile Include="Commons\CommandBase.cs" />
     <Compile Include="Commons\NotifyBase.cs" />
+    <Compile Include="Commons\ObservableCollectionExtensions.cs" />
+    <Compile Include="Commons\RangeObservableCollection.cs" />
+    <Compile Include="Commons\RelayCommand.cs" />
     <Compile Include="Connected Services\SFCS_Server\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -144,6 +172,7 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Converters\BoolToScrollBarVisibilityConverter.cs" />
+    <Compile Include="Converters\BoolToTitleConverter.cs" />
     <Compile Include="GlobalParams.cs" />
     <Compile Include="Helpers\ConfigHelper.cs" />
     <Compile Include="Helpers\HttpHelper.cs" />
@@ -161,18 +190,23 @@
     <Compile Include="Models\GetShelfPositionRequest.cs" />
     <Compile Include="Models\GetShelfPositionResponse.cs" />
     <Compile Include="Models\Global.cs" />
+    <Compile Include="Models\InboundRack.cs" />
     <Compile Include="Models\MachineMSGModel.cs" />
     <Compile Include="Models\MenuModel.cs" />
     <Compile Include="Models\Model.cs" />
+    <Compile Include="Models\OutboundRack.cs" />
     <Compile Include="Models\RackCellModel.cs" />
     <Compile Include="Models\SqModels.cs" />
+    <Compile Include="Models\TallyRack.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\USNCoordinate.cs" />
+    <Compile Include="Models\WarehouseRack.cs" />
     <Compile Include="Models\XMLModelBase.cs" />
     <Compile Include="ViewModels\HomeVM.cs" />
     <Compile Include="ViewModels\LoginVM.cs" />
     <Compile Include="ViewModels\ManualVM.cs" />
     <Compile Include="ViewModels\MianUIVM.cs" />
+    <Compile Include="ViewModels\RackEditVM.cs" />
     <Compile Include="ViewModels\RackManagementVM.cs" />
     <Compile Include="ViewModels\SettingsVM.cs" />
     <Compile Include="Views\Home.xaml.cs">
@@ -186,6 +220,9 @@
     </Compile>
     <Compile Include="Views\Manual.xaml.cs">
       <DependentUpon>Manual.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RackEditView.xaml.cs">
+      <DependentUpon>RackEditView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RackManagement.xaml.cs">
       <DependentUpon>RackManagement.xaml</DependentUpon>
@@ -877,6 +914,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Manual.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RackEditView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

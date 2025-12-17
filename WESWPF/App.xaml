@@ -3,14 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:WES"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:conv="clr-namespace:WES.Converters"
              StartupUri="Views/MainUI.xaml">
     <Application.Resources>
+        
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Light" />
                 <ui:ControlsDictionary />
                 <ResourceDictionary Source="Assets\Styles\MyStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <conv:BoolToTitleConverter x:Key="BoolToTitleConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

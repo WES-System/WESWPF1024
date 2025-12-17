@@ -655,7 +655,7 @@ namespace WES.ViewModels
                             }
                             else
                             {
-                                MachineMSGModel machineMSG = (await SQLHelper.Instance.SelectAsync<MachineMSGModel>(m => m.Where(c => c.USN == sbMessage.Split(',')[0]))).FirstOrDefault();
+                                MachineMSGModel machineMSG = (await SQLHelper.Instance.SelectWithResultAsync<MachineMSGModel>(c => c.USN == sbMessage.Split(',')[0])).Any1.FirstOrDefault();
                                 LogHelper.Info($"手臂作业完成,再次向森林系统发送数据{jsonStr}失败,森林系统响应{responseStr1}");
                                 dispatcher.Invoke(() =>
                                 {

@@ -13,11 +13,12 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition/>
+                <RowDefinition Height="50"/>
             </Grid.RowDefinitions>
             <Border Background="LightGray" Margin="5" CornerRadius="5">
                 <Grid>
                     <StackPanel Margin="8 0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="编号:" VerticalAlignment="Center"/>
+                        <TextBlock Text="货架编号:" VerticalAlignment="Center"/>
                         <TextBox x:Name="RackCellCode" Text="{Binding Rack.RackCellCode}" Width="140" Margin="5 0 20 0"/>
                         <TextBlock Text="行索引:" VerticalAlignment="Center"/>
                         <TextBox x:Name="RowIndex" Text="{Binding Rack.RackCellRowIndex}" Width="55" Margin="5 0 20 0"/>
@@ -27,8 +28,8 @@
                         <TextBox x:Name="RackCellType" Text="{Binding Rack.RackCellType}" Width="55" Margin="5 0 20 0"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="刷新" Margin="8 5" MinWidth="40" Command="{Binding ReFreshCommand}"/>
-                        <Button Content="保存" Margin="8 5" MinWidth="40" Command="{Binding AddRackCommand}"/>
+                        <Button Content="查询" Margin="8 5" MinWidth="40" Command="{Binding SelectCommand}"/>
+                        <Button Content="添加" Margin="8 5" MinWidth="40" Command="{Binding AddRackCommand}"/>
                         <Button Content="一键改线" Margin="8 5" MinWidth="40" Command="{Binding ChangeLineCommand}"/>
                     </StackPanel>
                 </Grid>
@@ -36,18 +37,16 @@
 
             <Border Grid.Row="1">
                 <DataGrid Background="Transparent" RowHeaderWidth="0" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" ItemsSource="{Binding Rackcells}" Margin="5" AutoGenerateColumns="False">
-                    <!--<DataGrid.Resources>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                        </Style>
-                    </DataGrid.Resources>
-                    <DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-                        </Style>
-                    </DataGrid.CellStyle>-->
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="编号" Binding="{Binding RackCellCode}" Width="*">
+                        <DataGridTextColumn Header="编号" Binding="{Binding ID}" Width="60">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Margin" Value="5 0 0 0"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="货架编号" Binding="{Binding RackCellCode}" Width="*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -93,6 +92,38 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
+            </Border>
+
+            <!-- 分页控件区域 -->
+            <Border Grid.Row="2" Margin="5" Background="Transparent" CornerRadius="5" HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Button Content="首页" 
+                            Command="{Binding FirstPageCommand}" 
+                            Margin="5" 
+                            IsEnabled="{Binding CanFirstPage}"/>
+                    <Button Content="上一页" 
+                            Command="{Binding PreviousPageCommand}" 
+                            Margin="5" 
+                            IsEnabled="{Binding CanPreviousPage}"/>
+                    <TextBlock Text="{Binding PageInfo}" 
+                               VerticalAlignment="Center" 
+                               Margin="10 0"/>
+                    <Button Content="下一页" 
+                            Command="{Binding NextPageCommand}" 
+                            Margin="5" 
+                            IsEnabled="{Binding CanNextPage}"/>
+                    <Button Content="末页" 
+                            Command="{Binding LastPageCommand}" 
+                            Margin="5" 
+                            IsEnabled="{Binding CanLastPage}"/>
+                    <TextBlock Text="每页行数:" 
+                               VerticalAlignment="Center" 
+                               Margin="10 0 5 0"/>
+                    <ComboBox ItemsSource="{Binding PageSizes}" 
+                              SelectedItem="{Binding CurrentPageSize}" 
+                              Width="80" 
+                              Margin="0 5"/>
+                </StackPanel>
             </Border>
         </Grid>
     </Border>

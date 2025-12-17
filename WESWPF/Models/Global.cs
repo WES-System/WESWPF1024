@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Tiering
+namespace WES
 {
     public class Global
     {
@@ -41,7 +41,7 @@ namespace Tiering
 
         public static User CurrentUser = new User
         {
-            UserName = "LayUI",
+            UserName = "Q22050534",
             Password = "Q22050534",
         };
         public static DateTime CurrentUserTime = DateTime.Now;

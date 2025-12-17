@@ -53,5 +53,20 @@ namespace WES.Models
                 DoNotify();
             }
         }
+
+        private List<MenuModel> subMenus;
+        public List<MenuModel> SubMenus
+        {
+            get => subMenus ?? (subMenus = new List<MenuModel>());
+            set { subMenus = value; DoNotify(); }
+        }
+
+        // 新增：是否展开子菜单（用于UI控制）
+        private bool isExpanded;
+        public bool IsExpanded { 
+            get => isExpanded; 
+            set { isExpanded = value; DoNotify(); } 
+        }
+
     }
 }

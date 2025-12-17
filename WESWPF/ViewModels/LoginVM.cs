@@ -81,7 +81,8 @@ namespace WES.ViewModels
                         Window o = obj as Window;
                         o.DialogResult = true;
                         o.Close();
-                        Tiering.Global.CurrentUser = user;
+                        Global.CurrentUser = user;
+                        Global.LoginUserTime = DateTime.Now;
                         return;
                     }
                 }

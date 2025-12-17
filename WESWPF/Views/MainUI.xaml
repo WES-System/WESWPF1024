@@ -18,17 +18,18 @@
         MinHeight="650"
         MinWidth="900"
         MouseLeftButtonDown="WinMove">
+    
     <Border CornerRadius="5" Background="White">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition/>
-                <RowDefinition Height="35"/>
+                <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
             <!--header-->
             <Border Background="#FF2A7491" CornerRadius="5 5 0 0">
                 <Grid>
-                    <Border Height="35" Width="110" CornerRadius="3" HorizontalAlignment="Left" Margin="10 0">
+                    <Border Height="35" Width="140" CornerRadius="3" HorizontalAlignment="Left" Margin="10 0">
                         <Border.Background>
                             <ImageBrush ImageSource="/Assets/Images/Wistron.png"/>
                         </Border.Background>
@@ -47,17 +48,55 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Border Background="Transparent" Margin="10 20" BorderThickness="0 0 1 0" BorderBrush="LightGray">
-                    <ItemsControl ItemsSource="{Binding Menus}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate >
-                                <RadioButton Margin="0 1" IsChecked="{Binding IsChecked}" Tag="{Binding Icon}" Content="{Binding ContentName}" Command="{Binding DataContext.NavChangeCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding PageName}" GroupName="MenuGroup" Style="{StaticResource MenuRadioButtonStyle}" Height="45"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                <Border Grid.Row="1" Grid.Column="0" Background="Transparent" Margin="0 20" 
+                    BorderThickness="0 0 1 0" BorderBrush="#FF66A2B6">
+                    <TreeView ItemsSource="{Binding Menus}" 
+                        FocusVisualStyle="{x:Null}" 
+                        BorderThickness="0"
+                        Background="Transparent">
+                        <!-- 一级菜单模板 -->
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding SubMenus}">
+                                <!-- 一级菜单项（可展开/折叠） -->
+                                <Grid Height="45">
+                                    <RadioButton 
+                                       IsChecked="{Binding IsChecked}" 
+                                       Tag="{Binding Icon}" 
+                                       Content="{Binding ContentName}" 
+                                       Command="{Binding DataContext.NavChangeCommand,RelativeSource={RelativeSource AncestorType=Window}}" 
+                                       CommandParameter="{Binding PageName}" 
+                                       GroupName="MenuGroup" 
+                                       Style="{StaticResource MenuRadioButtonStyle}"/>
+                                    <!-- 展开/折叠按钮（仅当有子菜单时显示） -->
+                                    <!--<ToggleButton 
+                                       IsChecked="{Binding IsExpanded}"
+                                       Visibility="{Binding SubMenus, Converter={StaticResource HasItemsToVisibilityConverter}}"
+                                       Width="20" Height="20" 
+                                       HorizontalAlignment="Right" 
+                                       VerticalAlignment="Center"
+                                       Style="{StaticResource ExpandToggleButtonStyle}"/>-->
+                                </Grid>
+
+                                <!-- 二级菜单模板 -->
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton 
+                                        IsChecked="{Binding IsChecked}" 
+                                        Tag="{Binding Icon}" 
+                                        Content="{Binding ContentName}" 
+                                        Command="{Binding DataContext.NavChangeCommand,RelativeSource={RelativeSource AncestorType=Window}}" 
+                                        CommandParameter="{Binding PageName}" 
+                                        GroupName="MenuGroup" 
+                                        Style="{StaticResource SubMenuRadioButtonStyle}"
+                                        Margin="-20 0 0 0" Height="40"/>
+                                    </DataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
                 </Border>
 
-                <ContentControl Grid.Column="1" x:Name="Content" Content="{Binding MainContent}" Margin="10 20 20 20"/>
+                <ContentControl Grid.Column="1" x:Name="Content" Content="{Binding MainContent}" Margin="10 20 20 0"/>
             </Grid>
             
             <!--Footer-->

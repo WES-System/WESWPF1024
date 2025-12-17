@@ -1,16 +1,107 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Linq.Expressions;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Common;
+using FreeSql.DataAnnotations;
 
 namespace Models
 {
+    /// <summary>
+    /// 数据库表单：父表
+    /// </summary>
+    [DataContract]
+    public class FreeSqlDateArgsBase
+    {
+        /// <summary>
+        /// 属性：主键
+        /// </summary>
+        [DataMember]
+        [Column(IsPrimary = true, IsIdentity = true)]
+        public long Id { get; set; }
+        /// <summary>
+        /// 属性：乐观锁
+        /// </summary>
+        [Column(IsVersion = true)]
+        public long Version { get; set; }
+        /// <summary>
+        /// 属性：创建时间
+        /// </summary>
+        [DataMember]
+        [Column(ServerTime = DateTimeKind.Local, CanUpdate = false)]
+        public DateTime CreateTime { get; set; }
+        /// <summary>
+        /// 属性：更新时间
+        /// </summary>
+        //[Column(ServerTime = DateTimeKind.Utc, CanInsert = false)]
+        [Column(ServerTime = DateTimeKind.Local)]
+        public DateTime UpdateTime { get; set; }
+        /// <summary>
+        /// 枚举：状态
+        /// </summary>
+        [Column(MapType = typeof(int))]
+        public StateEnum State { get; set; }
+        /// <summary>
+        /// 忽略：错误信息
+        /// </summary>
+        [Column(IsIgnore = true)]
+        [JsonIgnore]
+        public Exception Error { get; set; }
+        /// <summary>
+        /// 忽略：执行结果
+        /// </summary>
+        [Column(IsIgnore = true)]
+        [JsonIgnore]
+        public FreeSqlDateResultEnum Result { get; set; }
+    }
+
+    /// <summary>
+    /// 基础状态枚举
+    /// </summary>
+    public enum StateEnum
+    {
+        /// <summary>
+        /// 正常
+        /// </summary>
+        Normal = 0,
+        /// <summary>
+        /// 占用
+        /// </summary>
+        Occupied = 1,
+        /// <summary>
+        /// 禁用
+        /// </summary>
+        Disabled = 2
+    }
+
+    /// <summary>
+    /// 数据库操作结果枚举
+    /// </summary>
+    public enum FreeSqlDateResultEnum
+    {
+        /// <summary>
+        /// 成功
+        /// </summary>
+        Success = 0,
+        /// <summary>
+        /// 失败
+        /// </summary>
+        Failure = 1,
+        /// <summary>
+        /// 处理中
+        /// </summary>
+        Processing = 2
+    }
+
     public class TaskBaseInfo
     {
         public string reqCode { get; set; }
         public string taskCode { get; set; }
     }
+
     public class MapInfo
     {
         public string reqCode { get; set; }
