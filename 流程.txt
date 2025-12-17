@@ -1,0 +1,42 @@
+旋转平台Modbus客户端  10.60.87.93：502  rotatingPlatformClient
+
+扫码枪连接 10.60.87.93：2001  scannerClient
+
+手臂连接 10.60.87.93 ：7930  robotServer
+
+外箱连接 10.60.87.93 ：8765  wxCheckServer
+
+系统
+
+外箱数据上抛地址
+http://10.60.209.99:22222/Wincc/AnnounceWX
+
+
+http://10.60.209.99:22222/Wincc/AllocateBox  
+
+
+1.上位机接收到外箱检机172.30.112.194:61824消息:wxok-1S21SDS1HR00PW0LV0HQ
+   外箱检测机结果wxok-1S21SDS1HR00PW0LV0HQ上抛森林系统完成
+
+2.旋转平台已到位,向扫码枪发送photo触发扫码
+
+3.接收到扫码枪192.168.3.202:2001消息#1S21SDS1HR00PW0LV0HQ#
+   向旋转平台PLC寄存器地址1写20告知扫码完成
+
+4.开始向森林系统上传场景及机台SN信息:{"scene": "码垛入库","usn": "1S21SDS1HR00PW0LV0HQ","isuse": "N","isenable": "N"}
+INFO  09:32:15 收到森林系统响应:{"usn":"1S21SDS1HR00PW0LV0HQ","coordinate":"arm|1S21SDS1HR00PW0LV0HQ|0|0|M00003P610310|03"}
+INFO  09:32:15 机台入库
+INFO  09:32:15 向旋转平台PLC寄存器地址1写40,等待手臂抓取
+
+5.上位机接收到手臂192.168.2.64:48016消息:START
+   收到手臂取料信号,向手臂发送机台架位信息1S21SDS1HR00PW0LV0HQ,0,0,0,08,11  8列
+6.上位机接收到手臂192.168.2.64:48016消息:GET
+INFO  09:32:19 手臂抓取机台OK
+INFO  09:32:19 当前机台架位信息留底:1S21SDS1HR00PW0LV0HQ,0,0,0,08,11
+INFO  09:32:19 清除当前机台架位信息:1S21SDS1HR00PW0LV0HQ,0,0,0,08,11
+
+INFO  09:32:23 上位机接收到外箱检机172.30.112.194:61824消息:wxok-1S21SDS1HR00PW0LV0C7
+INFO  09:32:23 外箱检测机结果wxok-1S21SDS1HR00PW0LV0C7上抛森林系统完成
+
+9.收到手臂完成信号,回复手臂Finish
+INFO  09:32:28 手臂作业完成,向森林系统发送数据{"usn":"1S21SDS1HR00PW0LV0HQ","barcode":null,"PackMachineNo":"","Point":""}成功,森林系统响应{"CallerIP":"172.30.112.34","Result":"SUCCESS","Message":"已收到"}

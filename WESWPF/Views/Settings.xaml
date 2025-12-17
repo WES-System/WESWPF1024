@@ -1,0 +1,112 @@
+﻿<UserControl x:Class="WES.Views.Settings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WES.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             FontSize="18"
+             FontFamily="kaiti">
+    <Border CornerRadius="5" Background="#FFF2F9F5" Padding="0">
+        <Grid Margin="20 10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="系统设置" FontSize="20" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Command="{Binding RefreshConfigCommand}" FontSize="14" Content="刷新" Tag="Refresh" Style="{StaticResource IconBttonStyle}" Margin="20 0"/>
+                <Button Command="{Binding SaveConfigCommand}" FontSize="14" Content="保存" Tag="Save" Style="{StaticResource IconBttonStyle}"/>
+            </StackPanel>
+            <Border BorderBrush="LightGray" BorderThickness="0 0 0 1"/>
+            <ScrollViewer Margin="0 20 0 0" Grid.Row="1" FocusVisualStyle="{x:Null}">
+                <Border>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="70"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="100"/>
+                            <RowDefinition Height="100"/>
+                            <RowDefinition Height="100"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.75*"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="通信参数配置" VerticalAlignment="Top" FontWeight="Bold" Foreground="Gray" Margin="10 0 0 0"/>
+
+
+                        <TextBlock Grid.Row="1" Text="手臂服务IP " HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="1" Width="250" Grid.Column="1" Text="{Binding Config.RobotIP}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="2" Text="手臂服务端口" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="2" Width="250" Grid.Column="1" Text="{Binding Config.RobotPort}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="3" Text="外箱服务IP" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="3" Width="250" Grid.Column="1" Text="{Binding Config.WXCMIP}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="4" Text="外箱服务端口" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="4" Width="250" Grid.Column="1" Text="{Binding Config.WXCMPort}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="5" Text="扫码枪IP" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="5" Width="250" Grid.Column="1" Text="{Binding Config.BarcodeIP}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="6" Text="扫码枪端口" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="6" Width="250" Grid.Column="1" Text="{Binding Config.BarcodePort}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="7" Text="旋转平台IP" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="7" Width="250" Grid.Column="1" Text="{Binding Config.RotatingPlatformIP}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="8" Text="旋转平台端口" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="8" Width="250" Grid.Column="1" Text="{Binding Config.RotatingPlatformPort}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="9" Text="森林系统IP" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="9" Width="250" Grid.Column="1" Text="{Binding Config.FSIP}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="10" Text="森林系统端口" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="10" Width="250" Grid.Column="1" Text="{Binding Config.FSPort}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="11" Text="其他参数设置" VerticalAlignment="Center" FontWeight="Bold" Foreground="Gray" Margin="10 0 0 0"/>
+
+                        <TextBlock Grid.Row="12" Text="当前场景" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <ComboBox  ItemsSource="{Binding SceneOptions}" SelectedValuePath="SceneCode" SelectedValue="{Binding Config.Scene, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="250" Grid.Row="12" Grid.Column="1" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="13" Text="扫码触发字符" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="13" Width="250" Grid.Column="1" Text="{Binding Config.ScannerTriggerStr}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="14" Text="流程触发字符" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="14" Width="250" Grid.Column="1" Text="{Binding Config.RobotTriggerSrt}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="15" Text="码板机编号" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="15" Width="250" Grid.Column="1" Text="{Binding Config.PackMachineNo}" Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="16" Text="外箱检测结果上抛接口" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="16" Width="250" Grid.Column="1" Text="{Binding Config.WXUpload_URL}" TextWrapping="WrapWithOverflow"  Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="17" Text="获取机台架位信息接口" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="17" Width="260" Grid.Column="1" Text="{Binding Config.GetShelfPoint_URL}" TextWrapping="WrapWithOverflow"  Margin="20 0" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="18" Text="机台到位结果上抛接口" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80 0 0 0"/>
+                        <TextBox Grid.Row="18" Width="260" Grid.Column="1" Text="{Binding Config.CompleteUpload_URL}" TextWrapping="WrapWithOverflow" Margin="20 0" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>
