@@ -28,6 +28,40 @@ namespace WES.ViewModels
             }
         }
 
+        // 展开状态
+        private bool _isAdvancedSearchExpanded;
+        public bool IsAdvancedSearchExpanded
+        {
+            get => _isAdvancedSearchExpanded;
+            set
+            {
+                if (_isAdvancedSearchExpanded == value) return;
+                _isAdvancedSearchExpanded = value;
+                DoNotify();
+                DoNotify(nameof(ToggleButtonText)); // 更新按钮文字
+            }
+        }
+
+        // 切换按钮文字
+        public string ToggleButtonText => IsAdvancedSearchExpanded ? "收起" : "展开";
+
+        private CommandBase _toggleAdvancedSearchCommand;
+
+        public CommandBase ToggleAdvancedSearchCommand
+        {
+            get
+            {
+                return _toggleAdvancedSearchCommand ?? (_toggleAdvancedSearchCommand = new CommandBase
+                {
+                    DoExcute = obj =>
+                    {
+                        IsAdvancedSearchExpanded = !IsAdvancedSearchExpanded;
+                    },
+                    DoCanExecute = obj => { return true; }
+                });
+            }
+        }
+
         #region 分页属性
         // 分页大小选项
         public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 50, 100, 500, 1000 };

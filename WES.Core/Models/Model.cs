@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Common;
 using FreeSql.DataAnnotations;
 
 namespace Models
@@ -110,75 +109,7 @@ namespace Models
         public string reqCode { get; set; }
         public string data { get; set; }
     }
-    public class SceneData
-    {
-        /// <summary>
-        /// 用于存放任务的字典，索引为任务码
-        /// </summary>
-        public Dictionary<string, DBModels. AGVTaskStatus> AGVTasks = new Dictionary<string, DBModels.AGVTaskStatus>();      
-        public string SceneCode { get; set; }
-        public string ClientIp { get; set; }
-        public int TaskTotalCount
-        { get {
-                var keys = AGVTasks.Keys;
-                return keys.Count;
-            } }
-        public int TaskCompletedCount
-        { get {
-                var keys = AGVTasks.Keys;
-                int count = 0;
-                foreach (var item in keys)
-                {
-                    if (AGVTasks[item].TaskStatus=="9")
-                    {
-                        count++;
-                    }  
-                }
-                return count;
-            } }
-        public int TaskRunningCount
-        { get {
-                var keys = AGVTasks.Keys;
-                int count = 0;
-                foreach (var item in keys)
-                {
-                    if (AGVTasks[item].TaskStatus == "2")
-                    {
-                        count++;
-                    }
-                }
-                return count;
-            } }
-        public int TaskReadyCount
-        { get {
-                var keys = AGVTasks.Keys;
-                int count = 0;
-                foreach (var item in keys)
-                {
-                    if (AGVTasks[item].TaskStatus == "1")
-                    {
-                        count++;
-                    }
-                }
-                return count;
-            } }
-        public int TaskCancelCount
-        {
-            get
-            {
-                var keys = AGVTasks.Keys;
-                int count = 0;
-                foreach (var item in keys)
-                {
-                    if (AGVTasks[item].TaskStatus == "5")
-                    {
-                        count++;
-                    }
-                }
-                return count;
-            }
-        }
-    }
+
     public class AGVStatus
     {
         public string robotCode { set; get; }
