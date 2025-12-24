@@ -164,6 +164,10 @@ namespace WES.ViewModels
             }
         }
 
+        private Task _monitoringTask;
+        private CancellationTokenSource _monitoringCts;
+        private readonly object _taskLock = new object();
+
         private Socket sbClient;//手臂客户端
 
         private SocketHelper fsServer;//森林Socket服务
@@ -174,9 +178,9 @@ namespace WES.ViewModels
 
         private SocketHelper scannerClient;//扫码枪Socket客户端
 
-        private ModbusHelper cylinderClient;//气缸Modbus客户端
+        private ModbusTcpClient cylinderClient;//气缸Modbus客户端
 
-        private ModbusHelper rotatingPlatformClient;//旋转平台Modbus客户端
+        private ModbusTcpClient modbusClient;//旋转平台Modbus客户端
 
         private ConfigModel config = GlobalParams.config;//系统参数配置
 
@@ -301,7 +305,7 @@ namespace WES.ViewModels
                     if (SelectModel != null)
                     {
                         LogHelper.Info($"手动删除机台到位信息:{SelectModel.RawData}");
-                        await SQLHelper.Instance.DeleteAsync(SelectModel);
+                        await SqliteSQLHelper.Instance.DeleteWithResultAsync(SelectModel);
                         dispatcher.Invoke(() =>
                         {
                             UploadFailMSG.Remove(SelectModel);
@@ -327,7 +331,7 @@ namespace WES.ViewModels
                             {
                                 UploadFailMSG.Remove(SelectModel);
                             });
-                            await SQLHelper.Instance.DeleteAsync(SelectModel);
+                            await SqliteSQLHelper.Instance.DeleteWithResultAsync(SelectModel);
                         }
                         else
                         {
@@ -345,7 +349,7 @@ namespace WES.ViewModels
                             foreach (MachineMSGModel item in tempList)
                             {
                                 LogHelper.Info($"手动删除机台到位信息:{item.RawData}");
-                                await SQLHelper.Instance.DeleteAsync(item);
+                                await SqliteSQLHelper.Instance.DeleteWithResultAsync(item);
                                 dispatcher.Invoke(() =>
                                 {
                                     UploadFailMSG.Remove(item);
@@ -379,7 +383,7 @@ namespace WES.ViewModels
                                     {
                                         UploadFailMSG.Remove(SelectModel);
                                     });
-                                    await SQLHelper.Instance.DeleteAsync(SelectModel);
+                                    await SqliteSQLHelper.Instance.DeleteWithResultAsync(SelectModel);
                                 }
                                 else
                                 {
@@ -455,12 +459,12 @@ namespace WES.ViewModels
             LoadDB();
             ReadYieldFromFile();
             LoadWXConfig();
-            InitTimer();
+            //InitTimer();
         }
 
         private async void test()
         {
-            await SQLHelper.Instance.InsertAsync(new MachineMSGModel() { RawData = "1111", USN = "USN11111111", MType = "入库", RackCellMsg = "架位信息" });
+            await SqliteSQLHelper.Instance.InsertAsync(new MachineMSGModel() { RawData = "1111", USN = "USN11111111", MType = "入库", RackCellMsg = "架位信息" });
         }
 
         #region 初始化日志
@@ -515,14 +519,15 @@ namespace WES.ViewModels
         /// </summary>
         private void InitCommunication()
         {
-            InitRobotCommunication();//手臂连接
-            InitScannerCommunication();//扫码枪连接
+            //InitRobotCommunication();//手臂连接
+            //InitScannerCommunication();//扫码枪连接
             //InitCylinderCommunication();//气缸连接
             if (config.Scene == "0")
             {
-                InitWXCMCommunication();//外箱连接
-                InitRotatingPlatformCommunication();//旋转平台连接
+                //InitWXCMCommunication();//外箱连接
+
             }
+            InitRobotModbusTcpCommunication();//手臂ModbusTcp连接
         }
 
         /// <summary>
@@ -641,7 +646,7 @@ namespace WES.ViewModels
                         if (res.Result == "SUCCESS")
                         {
                             LogHelper.Info($"手臂作业完成,向森林系统发送数据{jsonStr}成功,森林系统响应{responseStr}");
-                            await SQLHelper.Instance.DeleteAsync<MachineMSGModel>(c => c.Where(o => o.RackCellMsg.Contains(sbMessage.Split(',')[0])));
+                            await SqliteSQLHelper.Instance.DeleteWithResultAsync<MachineMSGModel>(c => c.RackCellMsg.Contains(sbMessage.Split(',')[0]));
                         }
                         else
                         {
@@ -651,11 +656,11 @@ namespace WES.ViewModels
                             if (res1.Result == "SUCCESS")
                             {
                                 LogHelper.Info($"再次向森林系统发送数据{jsonStr}成功,森林系统响应{responseStr1}");
-                                await SQLHelper.Instance.DeleteAsync<MachineMSGModel>(c => c.Where(o => o.RackCellMsg.Contains(sbMessage.Split(',')[0])));
+                                await SqliteSQLHelper.Instance.DeleteWithResultAsync<MachineMSGModel>(c => c.RackCellMsg.Contains(sbMessage.Split(',')[0]));
                             }
                             else
                             {
-                                MachineMSGModel machineMSG = (await SQLHelper.Instance.SelectWithResultAsync<MachineMSGModel>(c => c.USN == sbMessage.Split(',')[0])).Any1.FirstOrDefault();
+                                MachineMSGModel machineMSG = (await SqliteSQLHelper.Instance.SelectWithResultAsync<MachineMSGModel>(c => c.USN == sbMessage.Split(',')[0])).Any1.FirstOrDefault();
                                 LogHelper.Info($"手臂作业完成,再次向森林系统发送数据{jsonStr}失败,森林系统响应{responseStr1}");
                                 dispatcher.Invoke(() =>
                                 {
@@ -873,8 +878,8 @@ namespace WES.ViewModels
                     else if (response.coordinate.Contains("arm")) // 入库机台 数据格式: arm|PW0K4CLVPWN0B571300A|0|0|M00001P610201|01
                     {
                         string rackCellCode = SplitKey(response.coordinate)[4];
-                        int i = SQLHelper.Instance.SelectAsync<RackCellModel>(c => c.Where(o => o.RackCellCode == rackCellCode)).Result.Count;
-                        if (i == 0)
+                        var res = await SqliteSQLHelper.Instance.SelectWithResultAsync<RackCellModel>(c => c.RackCellCode == rackCellCode);
+                        if (res.Any1.Count == 0)
                         {
                             LogHelper.Info($"架位{rackCellCode}本地不存在,机台回流");
                             ReciceReturn($"armng|{CurruntUSN}|0|0");
@@ -910,7 +915,7 @@ namespace WES.ViewModels
                     else
                     {
                         LogHelper.Info("向旋转平台PLC寄存器地址1写20告知扫码完成");
-                        rotatingPlatformClient.WriteRegisters(1, new ushort[] { 20 });//控制旋转平台旋转90度
+                        modbusClient.WriteRegisters(1, new ushort[] { 20 });//控制旋转平台旋转90度
                         scanningCount = 1;
                         LogHelper.Info("三次扫码失败,默认机台条码:NOREAD,机台流出");
                         CurruntUSN = "NOREAD";
@@ -921,7 +926,7 @@ namespace WES.ViewModels
                 else
                 {
                     LogHelper.Info("向旋转平台PLC寄存器地址1写20告知扫码完成");
-                    rotatingPlatformClient.WriteRegisters(1, new ushort[] { 20 });//控制旋转平台旋转90度
+                    modbusClient.WriteRegisters(1, new ushort[] { 20 });//控制旋转平台旋转90度
                     string tempusn = "";
                     List<string> usns = barCode.Split(new char[] { '#' }, StringSplitOptions.RemoveEmptyEntries).ToList();
                     string pwusn = usns.FirstOrDefault(c => c.StartsWith("PW"));
@@ -1032,7 +1037,7 @@ namespace WES.ViewModels
         {
             try
             {
-                cylinderClient = new ModbusHelper(config.CylinderIP, config.CylinderPort)
+                cylinderClient = new ModbusTcpClient(config.CylinderIP, config.CylinderPort)
                 {
                     MonitorAddress = ushort.Parse("0"),
                 };
@@ -1075,33 +1080,49 @@ namespace WES.ViewModels
         /// <summary>
         /// 初始化旋转平台ModbusTCP通信
         /// </summary>
-        private void InitRotatingPlatformCommunication()
+        private void InitRobotModbusTcpCommunication()
         {
+            if (modbusClient != null)
+            {
+                modbusClient.Dispose();
+            }
             try
             {
-                rotatingPlatformClient = new ModbusHelper(config.RotatingPlatformIP, config.RotatingPlatformPort)
+                modbusClient = new ModbusTcpClient(config.RotatingPlatformIP, config.RotatingPlatformPort)
                 {
-                    MonitorAddress = ushort.Parse("0"),
+                    SlaveAddress = 1,
+                    MonitorAddress = 0,
                 };
-                rotatingPlatformClient.ConnectEvent += RotatingPlatformConnect;
-                rotatingPlatformClient.DisConnectEvent += RotatingPlatformDisConnect;
-                rotatingPlatformClient.LogEvent += ShowRotatingPlatformLog;
-                TriggerProcess();
+                modbusClient.ConnectEvent += RotatingPlatformConnect;
+                modbusClient.DisConnectEvent += RotatingPlatformDisConnect;
+                modbusClient.LogEvent += ShowRotatingPlatformLog;
+                if (modbusClient.ConnectStatus)
+                {
+                    RotatingPlatformConnect();
+                }
+                //TriggerProcess();
+                // 4. 启动后台监控任务
+                StartMonitoringTask();
             }
             catch (Exception e)
             {
+                RotatingPlatformStatus = RedLight;
                 LogHelper.Debug($"初始化旋转平台通信异常:{e.Message}");
             }
         }
+
 
         /// <summary>
         /// 旋转平台PLC连接
         /// </summary>
         private void RotatingPlatformConnect()
         {
-            RotatingPlatformStatus = GreenLight;
-            GlobalParams.rotatingPlatformClient = rotatingPlatformClient;
-            LogHelper.Info("旋转平台PLC连接成功");
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                RotatingPlatformStatus = GreenLight;
+                GlobalParams.modbusClient = modbusClient;
+                LogHelper.Info("旋转平台PLC连接成功");
+            });
         }
 
         /// <summary>
@@ -1109,9 +1130,12 @@ namespace WES.ViewModels
         /// </summary>
         private void RotatingPlatformDisConnect()
         {
-            RotatingPlatformStatus = RedLight;
-            GlobalParams.rotatingPlatformClient = null;
-            LogHelper.Info("旋转平台PLC断开连接,正在重连");
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                RotatingPlatformStatus = RedLight;
+                GlobalParams.modbusClient = null;
+                LogHelper.Info("旋转平台PLC断开连接,正在重连");
+            });
         }
 
         /// <summary>
@@ -1121,9 +1145,51 @@ namespace WES.ViewModels
         /// <param name="msg2"></param>
         private void ShowRotatingPlatformLog(string msg1, string msg2)
         {
-            LogHelper.Info("旋转平台PLC输出日志:" + msg1 + msg2);
+            Application.Current.Dispatcher.Invoke(() =>
+            LogHelper.Info("旋转平台PLC输出日志:" + msg1 + msg2));
+        }
+
+        private void StartMonitoringTask()
+        {
+            lock (_taskLock)
+            {
+                if (_monitoringTask != null && !_monitoringTask.IsCompleted)
+                    return; // 已在运行
+
+                _monitoringCts = new CancellationTokenSource();
+                _monitoringTask = Task.Run(async () =>
+                {
+                    while (!_monitoringCts.Token.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            // 轮询 PLC 寄存器 0，检查是否到位（值为10）
+                            var registers = modbusClient?.ReadHoldingRegisters(0, 1);
+                            if (registers != null && registers.Length > 0 && registers[0] == 10)
+                            {
+                                // 发送确认：写 0 到寄存器 0
+                                modbusClient.WriteRegisters(0, new ushort[] { 0 });
+
+                                LogHelper.Info("手臂已到位,向扫码枪发送photo触发扫码");
+                            }
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            // Modbus 未连接，跳过本次轮询
+                            LogHelper.Debug($"未连接，跳过本次轮询:{ex.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.Debug($"触发扫码流程异常:{ex.Message}");
+                        }
+                        await Task.Delay(1000, _monitoringCts.Token); // 1000ms 轮询间隔
+                    }
+                }, _monitoringCts.Token);
+            }
         }
         #endregion
+
+
 
         #region 私有方法
         /// <summary>
@@ -1153,30 +1219,27 @@ namespace WES.ViewModels
         /// <param name="filePath"></param>
         private void LoadWXConfig(string filePath = "config.json")
         {
-            Task.Run(() =>
+            try
             {
-                try
+                if (File.Exists(filePath))
                 {
-                    if (File.Exists(filePath))
-                    {
-                        string json = File.ReadAllText(filePath);
-                        Dictionary<string, bool> configDic = JsonSerializer.Deserialize<Dictionary<string, bool>>(json)
-                                      ?? new Dictionary<string, bool>(); // 反序列化 JSON
-                        IsWXEnable = configDic["IsWXEnable"];
-                        IsByPass = configDic["IsByPass"];
-                    }
-                    else
-                    {
-                        IsWXEnable = true;
-                        IsByPass = false;
-                        LogHelper.Info("配置文件不存在，使用默认值。");
-                    }
+                    string json = File.ReadAllText(filePath);
+                    Dictionary<string, bool> configDic = JsonSerializer.Deserialize<Dictionary<string, bool>>(json)
+                                  ?? new Dictionary<string, bool>(); // 反序列化 JSON
+                    IsWXEnable = configDic["IsWXEnable"];
+                    IsByPass = configDic["IsByPass"];
                 }
-                catch (Exception ex)
+                else
                 {
-                    LogHelper.Debug($"加载文件失败: {ex.Message}");
+                    IsWXEnable = true;
+                    IsByPass = false;
+                    LogHelper.Info("配置文件不存在，使用默认值。");
                 }
-            }); 
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Debug($"加载文件失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -1199,15 +1262,15 @@ namespace WES.ViewModels
         /// <param name="rackCellCode">料架单元</param>
         /// <param name="boxCell">料框在该单元中的位置</param>
         /// <returns></returns>
-        private string GetMessageToRobot(string rackCellCode, int boxCell)//M00001P610201|01
+        private async Task<string> GetMessageToRobot(string rackCellCode, int boxCell)//M00001P610201|01
         {
-            List<RackCellModel> rackCells = SQLHelper.Instance.SelectAsync<RackCellModel>(c => c.Where(o => o.RackCellCode == rackCellCode)).Result;
-            if (rackCells?.Count == 0)
+            var rackCells = await SqliteSQLHelper.Instance.SelectWithResultAsync<RackCellModel>(c => c.RackCellCode == rackCellCode);
+            if (rackCells.Any1?.Count == 0)
             {
                 LogHelper.Info($"未找到RackCell{rackCellCode},请确认数据库数据是否完整");
                 return "";
             }
-            RackCellModel rackCell = rackCells.First();
+            RackCellModel rackCell = rackCells.Any1.FirstOrDefault();
             int rowIndex = rackCell.RackCellRowIndex; //2
             int columnIndex = rackCell.RackCellColumnIndex; //1
             int newBoxCell = 0;
@@ -1261,6 +1324,7 @@ namespace WES.ViewModels
             return boxCell + ((rowIndex - 1) * maxCellCount);
         }
 
+        
         /// <summary>
         /// 触发扫码
         /// </summary>
@@ -1278,15 +1342,15 @@ namespace WES.ViewModels
                             await Task.Delay(1000);
                             continue;
                         }
-                        if (!rotatingPlatformClient?.ConnectStatus == true)
+                        if (!modbusClient?.ConnectStatus == true)
                         {
                             await Task.Delay(1000);
                             continue;
                         }
-                        ushort[] plcdata = rotatingPlatformClient?.ReadHoldingRegisters(0, 1);
+                        ushort[] plcdata = modbusClient?.ReadHoldingRegisters(0, 1);
                         if (plcdata[0] == 10)
                         {
-                            rotatingPlatformClient.WriteRegisters(0, new ushort[] { 0 });
+                            modbusClient.WriteRegisters(0, new ushort[] { 0 });
                             scannerClient?.SendData("photo", scannerClient?.Socket);
                             LogHelper.Info("旋转平台已到位,向扫码枪发送photo触发扫码");
                         }
@@ -1316,60 +1380,60 @@ namespace WES.ViewModels
                         MType = "普通NG机台";
                         CurruntRockCellMSG = message;
                         LogHelper.Info("向旋转平台PLC寄存器地址1写40,等待手臂抓取");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 40 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 40 });
                         break;
                     case "1"://OOB
                         MType = "OOB机台";
                         CurruntRockCellMSG = message;
                         LogHelper.Info("向旋转平台PLC寄存器地址1写40,等待手臂抓取");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 40 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 40 });
                         break;
                     case "2"://EC未过
                         MType = "EC未过机台";
                         CurruntRockCellMSG = message;
                         LogHelper.Info("向旋转平台PLC寄存器地址1写40,等待手臂抓取");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 40 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 40 });
                         break;
                     case "3"://大机台
                         MType = "大机台";
                         LogHelper.Info("向旋转平台PLC寄存器地址1写30,机台流出");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 30 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 30 });
                         LogHelper.Info($"{MType}，通知旋转平台流出");
                         break;
                     case "4"://扫码失败
                         MType = "扫码失败";
                         LogHelper.Info("向旋转平台PLC寄存器地址1写30,机台流出");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 30 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 30 });
                         LogHelper.Info($"{MType}，通知旋转平台流出");
                         break;
                     case "5"://条码转换失败
                         MType = "条码转换失败";
                         LogHelper.Info("向旋转平台PLC寄存器地址1写30,机台流出");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 30 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 30 });
                         LogHelper.Info($"{MType}，通知旋转平台流出");
                         break;
                     case "6"://条码格式未知
                         MType = "条码格式未知";
                         LogHelper.Info("向旋转平台PLC寄存器地址1写30,机台流出");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 30 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 30 });
                         LogHelper.Info($"{MType}，通知旋转平台流出");
                         break;
                     case "7"://重复扫码
                         MType = "重复扫码";
                         LogHelper.Info("向旋转平台PLC寄存器地址1写30,机台流出");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 30 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 30 });
                         LogHelper.Info($"{MType}，通知旋转平台流出");
                         break;
                     case "8":
                         MType = "无法解析架位";
                         LogHelper.Info("向旋转平台PLC寄存器地址1写30,机台流出");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 30 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 30 });
                         LogHelper.Info($"{MType}，通知旋转平台流出");
                         break;
                     default:
                         MType = "未知类型";
                         LogHelper.Info("向旋转平台PLC寄存器地址1写30,机台流出");
-                        rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 30 });
+                        modbusClient?.WriteRegisters(1, new ushort[] { 30 });
                         LogHelper.Info($"NG类型：{MType}，通知旋转平台流出");
                         break;
                 }
@@ -1399,8 +1463,8 @@ namespace WES.ViewModels
                 string message = strList[1] + ",0,0,0," + GetMessageToRobot(strList[4], int.Parse(strList[5]));
                 CurruntRockCellMSG = message;
                 LogHelper.Info("向旋转平台PLC寄存器地址1写40,等待手臂抓取");
-                rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 40 });//继续流出
-                await SQLHelper.Instance.InsertAsync(new MachineMSGModel() { RawData = data, USN = CurruntUSN, MType = MType, RackCellMsg = CurruntRockCellMSG });
+                modbusClient?.WriteRegisters(1, new ushort[] { 40 });//继续流出
+                await SqliteSQLHelper.Instance.InsertWithResultAsync(new MachineMSGModel() { RawData = data, USN = CurruntUSN, MType = MType, RackCellMsg = CurruntRockCellMSG });
                 if (sbReady && robotServer.ClientSockets.Count != 0)
                 {
                     sbReady = false;
@@ -1461,8 +1525,8 @@ namespace WES.ViewModels
                     else if (response.coordinate.Contains("arm")) // 入库机台 数据格式: arm|PW0K4CLVPWN0B571300A|0|0|M00001P610201|01
                     {
                         string rackCellCode = SplitKey(response.coordinate)[4];
-                        int i = SQLHelper.Instance.SelectAsync<RackCellModel>(c => c.Where(o => o.RackCellCode == rackCellCode)).Result.Count;
-                        if (i == 0)
+                        var res = await SqliteSQLHelper.Instance.SelectWithResultAsync<RackCellModel>(c => c.RackCellCode == rackCellCode);
+                        if (res.Any1.Count == 0)
                         {
                             LogHelper.Info($"架位{rackCellCode}本地不存在,机台回流");
                             ReciceReturn($"armng|{CurruntUSN}|0|0");
@@ -1527,8 +1591,8 @@ namespace WES.ViewModels
         private async void LoadDB()
         {
             UploadFailMSG.Clear();
-            List<MachineMSGModel> overdueMessages = await SQLHelper.Instance.SelectAsync<MachineMSGModel>(c => c.Where(m => !m.IsUploaded));
-            foreach (MachineMSGModel item in overdueMessages)
+            var overdueMessages = await SqliteSQLHelper.Instance.SelectWithResultAsync<MachineMSGModel>(c => !c.IsUploaded);
+            foreach (MachineMSGModel item in overdueMessages.Any1)
             {
                 UploadFailMSG.Add(item);
             }
@@ -1671,8 +1735,8 @@ namespace WES.ViewModels
         private void RPRestart()
         {
             LogHelper.Info("旋转平台modbus客户端重连中,请稍等");
-            rotatingPlatformClient?.Dispose();
-            InitRotatingPlatformCommunication();
+            modbusClient?.Dispose();
+            InitRobotModbusTcpCommunication();
         }
 
         /// <summary>
@@ -1685,9 +1749,9 @@ namespace WES.ViewModels
         {
             try
             {
-                if (rotatingPlatformClient?.ConnectStatus == true)
+                if (modbusClient?.ConnectStatus == true)
                 {
-                    rotatingPlatformClient.WriteRegisters(address, new ushort[] { value });
+                    modbusClient.WriteRegisters(address, new ushort[] { value });
                     LogHelper.Info("报警信息:" + warningMsg);
                 }
             }

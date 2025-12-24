@@ -80,7 +80,7 @@ namespace WES.ViewModels
                         if (IsAddMode)
                         {
                             // 检查编号是否已存在
-                            var result = await SQLHelper.Instance.SelectWithResultAsync<RackCellModel>(
+                            var result = await SqliteSQLHelper.Instance.SelectWithResultAsync<RackCellModel>(
                                 rc => rc.RackCellCode == Rack.RackCellCode);
 
                             if (result.Any1.Count > 0)
@@ -89,7 +89,7 @@ namespace WES.ViewModels
                                 return;
                             }
 
-                            var res = await SQLHelper.Instance.InsertWithResultAsync(Rack);
+                            var res = await SqliteSQLHelper.Instance.InsertWithResultAsync(Rack);
                             if (res.Any1 > 0)
                             {
                                 MessageBox.Show($"架位{Rack.RackCellCode}添加成功");
@@ -102,7 +102,7 @@ namespace WES.ViewModels
                         }
                         else
                         {
-                            var res = await SQLHelper.Instance.UpdateWithResultAsync(Rack);
+                            var res = await SqliteSQLHelper.Instance.UpdateWithResultAsync(Rack);
                             if (res.Any1 > 0)
                             {
 

@@ -1,0 +1,43 @@
+#MachineCodeNG#
+#MachineCodeOK,ZJ00010#
+
+{
+  "Times": "First",
+  "Flag": "Input",
+  "Timestamp": "2025-09-16T16:29:54.4895758+08:00",
+  "Destination": "NA",
+  "Values": {
+    "MachineCode": "Hang001",
+    "CarrierCode": "ZJ00001",
+    "ShelfCode": "JW-0001-22"
+  }
+}
+
+{
+  "Times": "First",
+  "Flag": "Complete",
+  "Timestamp": "2025-09-16T16:29:54.4895758+08:00",
+  "Destination": "NA",
+  "Values": {
+    "MachineCode": "Hang001",
+    "CarrierCode": "ZJ00001",
+    "ShelfCode": "JW-0001-22"
+  }
+}
+
+
+#CarrierCodeNG#
+#CarrierCodeOK,ZJ00001#
+
+//出库
+
+{
+  "Flag": "Output",
+  "Timestamp": "2025-09-16T16:29:54.4895758+08:00",
+  "Destination": "NA",
+  "Values":[
+     {
+      "MachineCode": "Hang001"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+上位机 -> 中控程序
+第一次入库请求："First" 第二次入库请求："Second"  第三次入库请求："Third"
+{
+  "Times": "First",  （"Second", "Third"） 
+  "Flag": "Input",
+  "Timestamp": "2025-08-28T14:06:12.7657648+08:00",
+  "Destination": "NA",
+  "Values": {
+    "CarrierCode": "ZJ00001",
+    "MachineCode": "123456789",
+    "ShelfCode": "JW-0001-08"
+  }
+}
+
+中控程序 -> 上位机
+第一次入库响应："First" 第二次入库响应："Second" 第三次入库响应："Third"
+入库响应OK：
+{
+  "Times": "First",（"Second", "Third"）
+  "Flag": "Complete",
+  "Timestamp": "2025-08-28T14:06:12.7657648+08:00",
+  "Destination": "NA",
+  "Values": {
+    "CarrierCode": "ZJ00001",
+    "MachineCode": "123456789",
+    "ShelfCode": "JW-0001-08"
+  }
+}
+入库响应NG：
+{
+  "Times": "First",（"Second", "Third"）
+  "Flag": "NG",
+  "Timestamp": "2025-08-28T14:06:12.7657648+08:00",
+  "Destination": "NA",
+  "Values": {
+    "CarrierCode": "ZJ00001",
+    "MachineCode": "123456789",
+    "ShelfCode": "JW-0001-08"
+  }
+}
+
+中控程序 -> 上位机
+单个出库请求OK：
+{
+  "Flag": "Output",
+  "Timestamp": "2025-08-28T19:03:06.8825373+08:00",
+  "Destination": "Packing",
+  "Values": [
+    {
+      "MachineCode": "123456789"
+    }
+  ]
+}
+
+多个出库请求OK：
+{
+  "Flag": "Output",
+  "Timestamp": "2025-08-28T19:04:34.1046142+08:00",
+  "Destination": "Packing",
+  "Values": [
+    {
+      "MachineCode": "123456"
+    },
+    {
+      "MachineCode": "666666666"
+    }
+  ]
+}
+
+
+出库请求NG：
+{
+  "Flag": "Output",
+  "Timestamp": "2025-08-28T19:03:06.8825373+08:00",
+  "Destination": "NG",
+  "Values": [
+    {
+      "MachineCode": "123456789"
+    }
+  ]
+}
+
+
+上位机 -> 中控程序
+出库响应OK：
+{
+  "Flag": "Complete",
+  "Timestamp": "2025-08-28T19:03:06.8825373+08:00",
+  "Destination": "Packing",
+  "Values": [
+    {
+      "MachineCode": "123456789"
+    }
+  ]
+}
+

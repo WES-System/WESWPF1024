@@ -30,6 +30,7 @@ namespace WES
             //thread.SetApartmentState(ApartmentState.STA);
             //thread.IsBackground = true;
             //thread.Start();
+            PGSQLHelper.GetInstance();
             GlobalParams.config = ConfigHelper.LoadConfigByXML<ConfigModel>("WES.exe.config");
             base.OnStartup(e);
         }

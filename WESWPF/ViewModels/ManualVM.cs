@@ -76,39 +76,39 @@ namespace WES.ViewModels
                     TriggerScanner();
                     break;
                 case "writeTrigger":
-                    if (GlobalParams.rotatingPlatformClient == null)
+                    if (GlobalParams.modbusClient == null)
                     {
                         RPStatus = "旋转平台未连接";
                         return;
                     }
-                    GlobalParams.rotatingPlatformClient?.WriteRegisters(0, new ushort[] { 10 });
+                    GlobalParams.modbusClient?.WriteRegisters(0, new ushort[] { 10 });
                     MessageBox.Show("OK");
                     break;
                 case "small":
-                    if (GlobalParams.rotatingPlatformClient == null)
+                    if (GlobalParams.modbusClient == null)
                     {
                         RPStatus = "旋转平台未连接";
                         return;
                     }
-                    GlobalParams.rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 40 });
+                    GlobalParams.modbusClient?.WriteRegisters(1, new ushort[] { 40 });
                     MessageBox.Show("OK");
                     break;
                 case "big":
-                    if (GlobalParams.rotatingPlatformClient == null)
+                    if (GlobalParams.modbusClient == null)
                     {
                         RPStatus = "旋转平台未连接";
                         return;
                     }
-                    GlobalParams.rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 30 });
+                    GlobalParams.modbusClient?.WriteRegisters(1, new ushort[] { 30 });
                     MessageBox.Show("OK");
                     break;
                 case "query":
-                    if (GlobalParams.rotatingPlatformClient == null)
+                    if (GlobalParams.modbusClient == null)
                     {
                         RPStatus = "旋转平台未连接";
                         return;
                     }
-                    ushort[] res = GlobalParams.rotatingPlatformClient?.ReadHoldingRegisters(1, 1);
+                    ushort[] res = GlobalParams.modbusClient?.ReadHoldingRegisters(1, 1);
                     if (res != null)
                     {
                         switch (res.FirstOrDefault())
@@ -133,12 +133,12 @@ namespace WES.ViewModels
                     }
                     break;
                 case "scannerOK":
-                    if (GlobalParams.rotatingPlatformClient == null)
+                    if (GlobalParams.modbusClient == null)
                     {
                         RPStatus = "旋转平台未连接";
                         return;
                     }
-                    GlobalParams.rotatingPlatformClient?.WriteRegisters(1, new ushort[] { 20 });
+                    GlobalParams.modbusClient?.WriteRegisters(1, new ushort[] { 20 });
                     MessageBox.Show("OK");
                     break;
                 case "convert":

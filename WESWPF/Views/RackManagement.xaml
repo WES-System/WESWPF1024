@@ -8,29 +8,54 @@
              d:DesignHeight="450" 
              d:DesignWidth="800"
              FontSize="15">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
     <Border Background="White" CornerRadius="5">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition/>
                 <RowDefinition Height="50"/>
             </Grid.RowDefinitions>
             <Border Background="LightGray" Margin="5" CornerRadius="5">
                 <Grid>
-                    <StackPanel Margin="8 0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="货架编号:" VerticalAlignment="Center"/>
-                        <TextBox x:Name="RackCellCode" Text="{Binding Rack.RackCellCode}" Width="140" Margin="5 0 20 0"/>
-                        <TextBlock Text="行索引:" VerticalAlignment="Center"/>
-                        <TextBox x:Name="RowIndex" Text="{Binding Rack.RackCellRowIndex}" Width="55" Margin="5 0 20 0"/>
-                        <TextBlock Text="列索引:" VerticalAlignment="Center"/>
-                        <TextBox x:Name="ColumnIndex" Text="{Binding Rack.RackCellColumnIndex}" Width="55" Margin="5 0 20 0"/>
-                        <TextBlock Text="类型(正,反,特):" VerticalAlignment="Center"/>
-                        <TextBox x:Name="RackCellType" Text="{Binding Rack.RackCellType}" Width="55" Margin="5 0 20 0"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="查询" Margin="8 5" MinWidth="40" Command="{Binding SelectCommand}"/>
-                        <Button Content="添加" Margin="8 5" MinWidth="40" Command="{Binding AddRackCommand}"/>
-                        <Button Content="一键改线" Margin="8 5" MinWidth="40" Command="{Binding ChangeLineCommand}"/>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <StackPanel Margin="8 0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="货架编号:" VerticalAlignment="Center"/>
+                            <TextBox x:Name="RackCellCode" Text="{Binding Rack.RackCellCode}" Width="140" Margin="5 0 20 0"/>
+                            <TextBlock Text="行索引:" VerticalAlignment="Center"/>
+                            <TextBox x:Name="RowIndex" Text="{Binding Rack.RackCellRowIndex}" Width="55" Margin="5 0 20 0"/>
+                            <TextBlock Text="列索引:" VerticalAlignment="Center"/>
+                            <TextBox x:Name="ColumnIndex" Text="{Binding Rack.RackCellColumnIndex}" Width="55" Margin="5 0 20 0"/>
+                            <TextBlock Text="类型(正,反,特):" VerticalAlignment="Center"/>
+                            <TextBox x:Name="RackCellType" Text="{Binding Rack.RackCellType}" Width="55" Margin="5 0 20 0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="查询" Margin="8 5" MinWidth="40" Command="{Binding SelectCommand}"/>
+                            <Button Content="添加" Margin="8 5" MinWidth="40" Command="{Binding AddRackCommand}"/>
+                            <Button Content="一键改线" Margin="8 5" MinWidth="40" Command="{Binding ChangeLineCommand}"/>
+                            <Button Content="{Binding ToggleButtonText}" 
+                                    Command="{Binding ToggleAdvancedSearchCommand}" 
+                                    FontSize="8" Margin="2 8"/>
+                        </StackPanel>
+                    </Grid>
+                    <!-- 高级搜索面板（默认折叠） -->
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,5" Visibility="{Binding IsAdvancedSearchExpanded, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Margin="8 4">
+                            <TextBlock Text="开始时间 从" FontSize="15"/>
+                            <DatePicker Margin="20 0" SelectedDate="{Binding Rack.CreateTimeStart}" />
+
+                            <TextBlock Text="开始时间 到" FontSize="15"/>
+                            <DatePicker Margin="20 0" SelectedDate="{Binding Rack.CreateTimeEnd}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" Margin="8 4">
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>

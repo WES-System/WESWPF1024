@@ -28,6 +28,40 @@ namespace WES.ViewModels
             }
         }
 
+        // 展开状态
+        private bool _isAdvancedSearchExpanded;
+        public bool IsAdvancedSearchExpanded
+        {
+            get => _isAdvancedSearchExpanded;
+            set
+            {
+                if (_isAdvancedSearchExpanded == value) return;
+                _isAdvancedSearchExpanded = value;
+                DoNotify();
+                DoNotify(nameof(ToggleButtonText)); // 更新按钮文字
+            }
+        }
+
+        // 切换按钮文字
+        public string ToggleButtonText => IsAdvancedSearchExpanded ? "收起" : "展开";
+
+        private CommandBase _toggleAdvancedSearchCommand;
+
+        public CommandBase ToggleAdvancedSearchCommand
+        {
+            get
+            {
+                return _toggleAdvancedSearchCommand ?? (_toggleAdvancedSearchCommand = new CommandBase
+                {
+                    DoExcute = obj =>
+                    {
+                        IsAdvancedSearchExpanded = !IsAdvancedSearchExpanded;
+                    },
+                    DoCanExecute = obj => { return true; }
+                });
+            }
+        }
+
         #region 分页属性
         // 分页大小选项
         public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 50, 100, 500, 1000 };
@@ -296,7 +330,7 @@ namespace WES.ViewModels
                 {
                     return;
                 }
-                await SQLHelper.Instance.DeleteAsync<RackCellModel>(c => c.Where(o => o.ID == ((RackCellModel)obj).ID));
+                await SqliteSQLHelper.Instance.DeleteWithResultAsync<RackCellModel>(c => c.ID == ((RackCellModel)obj).ID);
                 Rackcells.Remove((RackCellModel)obj);
                 MessageBox.Show($"架位{((RackCellModel)obj).RackCellCode}删除成功");
             }
@@ -336,29 +370,29 @@ namespace WES.ViewModels
                 // 货架编号查询（模糊匹配）
                 if (!string.IsNullOrWhiteSpace(Rack.RackCellCode))
                 {
-                    where = SQLHelper.Instance.AddWhere(where, r => r.RackCellCode.Contains(Rack.RackCellCode.Trim()));
+                    where = SqliteSQLHelper.Instance.AddWhere(where, r => r.RackCellCode.Contains(Rack.RackCellCode.Trim()));
                 }
 
                 // 行索引查询（精确匹配，仅当输入有效数字时）
                 if (int.TryParse(Rack.RackCellRowIndex.ToString(), out int rowIndex) && rowIndex > 0)
                 {
-                    where = SQLHelper.Instance.AddWhere(where, r => r.RackCellRowIndex == rowIndex);
+                    where = SqliteSQLHelper.Instance.AddWhere(where, r => r.RackCellRowIndex == rowIndex);
                 }
 
                 // 列索引查询（精确匹配，仅当输入有效数字时）
                 if (int.TryParse(Rack.RackCellColumnIndex.ToString(), out int colIndex) && colIndex > 0)
                 {
-                    where = SQLHelper.Instance.AddWhere(where, r => r.RackCellColumnIndex == colIndex);
+                    where = SqliteSQLHelper.Instance.AddWhere(where, r => r.RackCellColumnIndex == colIndex);
                 }
 
                 // 类型查询（模糊匹配）
                 if (!string.IsNullOrWhiteSpace(Rack.RackCellType))
                 {
-                    where = SQLHelper.Instance.AddWhere(where, r => r.RackCellType.Contains(Rack.RackCellType.Trim()));
+                    where = SqliteSQLHelper.Instance.AddWhere(where, r => r.RackCellType.Contains(Rack.RackCellType.Trim()));
                 }
 
                 // 执行分页查询
-                var pageResult = await SQLHelper.Instance.SelectPageWithResultAsync<RackCellModel>(
+                var pageResult = await SqliteSQLHelper.Instance.SelectPageWithResultAsync<RackCellModel>(
                     pageIndex: CurrentPageIndex,
                     pageSize: CurrentPageSize,
                     where: where,
@@ -418,11 +452,11 @@ namespace WES.ViewModels
                 if (show.ShowDialog() == true)
                 {
                     string line = show.Line;//M00003P610601
-                    List<RackCellModel> racks = SQLHelper.Instance.SelectAsync<RackCellModel>().Result;
-                    foreach (RackCellModel rack in racks)
+                    var racks = await SqliteSQLHelper.Instance.SelectWithResultAsync<RackCellModel>();
+                    foreach (RackCellModel rack in racks.Any1)
                     {
                         rack.RackCellCode = rack.RackCellCode.Substring(0, 5) + line + rack.RackCellCode.Substring(6);
-                        await SQLHelper.Instance.UpdateAsync(rack);
+                        await SqliteSQLHelper.Instance.UpdateAsync(rack);
                     }
                     await GetSampleData();
                     MessageBox.Show("修改成功");
@@ -443,7 +477,7 @@ namespace WES.ViewModels
         {
             try
             {
-                var pageResult = await SQLHelper.Instance.SelectPageWithResultAsync<RackCellModel>(
+                var pageResult = await SqliteSQLHelper.Instance.SelectPageWithResultAsync<RackCellModel>(
                     pageIndex: CurrentPageIndex,
                     pageSize: CurrentPageSize,
                     orderBy: x => x.ID

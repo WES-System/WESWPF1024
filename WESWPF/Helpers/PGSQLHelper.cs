@@ -7,37 +7,45 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WES.Models;
 
 namespace WES.Helpers
 {
-    public class SQLHelper : IDisposable
+    public class PGSQLHelper : IDisposable
     {
-        private static SQLHelper _instance;// = GetInstance();
-        public static SQLHelper Instance => _instance ?? GetInstance();
+        private static PGSQLHelper _instance;// = GetInstance();
+        public static PGSQLHelper Instance => _instance ?? GetInstance();
         private static readonly object _lock = new object();
         private readonly IFreeSql _freeSql;
         private bool _disposed = false;
-
         // 私有构造函数，防止在类外被实例化
-        private SQLHelper(string connectionString)
+        private PGSQLHelper(string connectionString)
         {
             // 初始化 FreeSql 的 PostgreSQL 数据库连接
             _freeSql = new FreeSqlBuilder()
-                .UseConnectionString(DataType.Sqlite, connectionString)
+                .UseConnectionString(DataType.PostgreSQL, connectionString)
                 .UseAutoSyncStructure(true) // 自动同步实体结构到数据库
                 .UseNoneCommandParameter(true)
                 .Build();
+            _freeSql.CodeFirst.SyncStructure<FloorCode>();
+            _freeSql.CodeFirst.SyncStructure<ShelfLocation>();
+            _freeSql.CodeFirst.SyncStructure<RoboticArm>();
+            _freeSql.CodeFirst.SyncStructure<Material>();
+            _freeSql.CodeFirst.SyncStructure<OrderTable>();
+            _freeSql.CodeFirst.SyncStructure<RuninShelf>();
+            _freeSql.CodeFirst.SyncStructure<InboundRecord>();
+            _freeSql.CodeFirst.SyncStructure<OutboundRecord>();
             // 全局过滤配置（可根据需要开启）
             //_freeSql.GlobalFilter.Apply<ISoftDelete>("IsDeleted", a => a.IsDeleted == false);
         }
 
-        static SQLHelper()
+        static PGSQLHelper()
         {
             _instance = GetInstance();
         }
 
         // 单例实例获取方法
-        public static SQLHelper GetInstance(string connectionString = @"Data Source = MyDataBase.db")
+        public static PGSQLHelper GetInstance(string connectionString = @"Host=localhost;Port=5432;Username=postgres;Password=QWER0987654321;Database=Runin;Pooling=true;Minimum Pool Size=1")
         {
             if (_instance == null)
             {
@@ -45,7 +53,7 @@ namespace WES.Helpers
                 {
                     if (_instance == null)
                     {
-                        _instance = new SQLHelper(connectionString);
+                        _instance = new PGSQLHelper(connectionString);
                     }
                 }
             }
@@ -155,22 +163,39 @@ namespace WES.Helpers
         #endregion
 
         #region 查询操作
+
+        /// <summary>
+        /// 查询所有数据
+        /// </summary>
+        public async Task<OpResult<List<T>>> SelectWithResultAsync<T>() where T : class
+        {
+            var result = new OpResult<List<T>> { IsSuccess = true };
+            try
+            {
+                result.Any1 = await _freeSql.Select<T>().ToListAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Error("SelectWithResultAsync失败", ex);
+                return HandleException<List<T>>(ex, "查询数据失败");
+            }
+        }
+
         /// <summary>
         /// 条件查询
         /// </summary>
         public async Task<OpResult<List<T>>> SelectWithResultAsync<T>(Expression<Func<T, bool>> where = null) where T : class
         {
+            var result = new OpResult<List<T>> { IsSuccess = true };
             try
             {
                 var query = _freeSql.Select<T>();
                 if (where != null) query = query.Where(where);
 
                 var data = await query.ToListAsync();
-                return new OpResult<List<T>>
-                {
-                    IsSuccess = true,
-                    Any1 = data
-                };
+                result.Any1 = data;
+                return result;
             }
             catch (Exception ex)
             {
@@ -188,6 +213,7 @@ namespace WES.Helpers
             int pageSize = 20,
             Expression<Func<T, object>> orderBy = null) where T : class
         {
+            var result = new OpResult<PageResult<T>> { IsSuccess = true };
             try
             {
                 var query = _freeSql.Select<T>();
@@ -223,11 +249,14 @@ namespace WES.Helpers
         /// </summary>
         public async Task<OpResult<bool>> ExistsWithResultAsync<T>(Expression<Func<T, bool>> where) where T : class
         {
+
+            var result = new OpResult<bool> { IsSuccess = true };
             try
             {
                 var exists = await _freeSql.Select<T>().Where(where).AnyAsync();
-                return new OpResult<bool> { IsSuccess = true, Any1 = exists };
-            }
+                result.Any1 = exists;
+                return result;
+                }
             catch (Exception ex)
             {
                 return HandleException<bool>(ex, "检查存在性失败");
@@ -317,10 +346,11 @@ namespace WES.Helpers
         /// </summary>
         public async Task<OpResult<int>> DeleteWithResultAsync<T>(Expression<Func<T, bool>> where) where T : class
         {
+            var result = new OpResult<int> { IsSuccess = true };
             try
             {
-                var count = await _freeSql.Delete<T>().Where(where).ExecuteAffrowsAsync();
-                return new OpResult<int> { IsSuccess = true, Any1 = count };
+                result.Any1 = await _freeSql.Delete<T>().Where(where).ExecuteAffrowsAsync();
+                return result;
             }
             catch (Exception ex)
             {
@@ -386,6 +416,7 @@ namespace WES.Helpers
 
 
         #endregion
+
         public void Dispose()
         {
             Dispose(true);
@@ -405,34 +436,11 @@ namespace WES.Helpers
             _disposed = true;
         }
 
-        ~SQLHelper()
+        ~PGSQLHelper()
         {
             Dispose(false);
         }
     }
 
-    public class ParameterRebinder : ExpressionVisitor
-    {
-        private readonly ParameterExpression _parameter;
-
-        public ParameterRebinder(ParameterExpression parameter)
-        {
-            _parameter = parameter;
-        }
-
-        protected override Expression VisitParameter(ParameterExpression node)
-        {
-            return base.VisitParameter(_parameter);
-        }
-    }
-
-    public class PageResult<T>
-    {
-        public List<T> List { get; set; } = new List<T>();
-        public long TotalCount { get; set; }
-        public int PageIndex { get; set; }
-        public int PageSize { get; set; }
-        public int PageCount { get; set; }
-    }
 
 }

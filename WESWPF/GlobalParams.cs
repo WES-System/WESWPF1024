@@ -19,7 +19,7 @@ namespace WES
         public static FrameworkElement RackManagement = null;//架位信息
         public static ConfigModel config = null;//配置
         public static SocketHelper scannerClient = null;
-        public static ModbusHelper rotatingPlatformClient = null;
+        public static ModbusTcpClient modbusClient = null;
         public static SFCS_Server.WebServiceSoapClient client = new SFCS_Server.WebServiceSoapClient();
         public static UploadData.WebServiceSoapClient clientUpload = new UploadData.WebServiceSoapClient();
 
