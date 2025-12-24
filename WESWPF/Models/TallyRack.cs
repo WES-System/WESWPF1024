@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace WES.Models
 {
-    internal class TallyRack
+    public class TallyRack
     {
+
     }
 }
